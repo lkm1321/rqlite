@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 	"errors"
+	// "fmt"
 )
 
 // commandType are commands that affect the state of the cluster, and must go through Raft.
@@ -45,7 +46,7 @@ func (m *rawMessage) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *command) MarshalJSON(b []byte) ([]byte, error){
+func (c *command) MarshalJSON() ([]byte, error){
 	switch c.Typ{
 		case execute, query: 
 			return json.Marshal(&struct{
@@ -87,7 +88,6 @@ func (c *command) MarshalJSON(b []byte) ([]byte, error){
 }
 
 func (c *command) UnmarshalJSON(b []byte) error {
-
 	// first, unmarshall into a map from string to json.RawMessage
 	partialUnmarshal := new(struct{
 		Typ *rawMessage 	`json:"typ"`
@@ -138,7 +138,7 @@ func newCommand(t commandType, d interface{}) (*command, error) {
 }
 
 func newMetadataSetCommand(id string, md map[string]string) (*command, error) {
-	m := metadataSetSub{
+	m := &metadataSetSub{
 		RaftID: id,
 		Data:   md,
 	}
