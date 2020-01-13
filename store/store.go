@@ -868,7 +868,7 @@ func (s *Store) execute(c *Connection, ex *ExecuteRequest) (*ExecuteResponse, er
 	d := &databaseSub{
 		ConnID:  c.ID,
 		Atomic:  ex.Atomic,
-		Queries: ex.Queries,
+		Queries: &ex.Queries,
 		Timings: ex.Timings,
 	}
 	cmd, err := newCommand(execute, d)
@@ -947,7 +947,7 @@ func (s *Store) query(c *Connection, qr *QueryRequest) (*QueryResponse, error) {
 		d := &databaseSub{
 			ConnID:  c.ID,
 			Atomic:  qr.Atomic,
-			Queries: qr.Queries,
+			Queries: &qr.Queries,
 			Timings: qr.Timings,
 		}
 		cmd, err := newCommand(query, d)
@@ -1135,16 +1135,16 @@ func (s *Store) Apply(l *raft.Log) interface{} {
 	s.restoreMu.RLock()
 	defer s.restoreMu.RUnlock()
 
-	var c command
-	if err := json.Unmarshal(l.Data, &c); err != nil {
-		panic(fmt.Sprintf("failed to unmarshal cluster command: %s", err.Error()))
+	c := new(command)
+	if err := json.Unmarshal(l.Data, c); err != nil {
+		panic(fmt.Sprintf("failed to unmarshal cluster command: %s, %s", err.Error(), l.Data))
 	}
 
 	switch c.Typ {
 	case execute, query:
-		var d databaseSub
-		if err := json.Unmarshal(c.Sub, &d); err != nil {
-			return &fsmGenericResponse{error: err}
+		d, ok := c.Sub.(*databaseSub)
+		if !ok {
+			return &fsmGenericResponse{error: errors.New("type assertion databaseSub failed")}
 		}
 
 		s.connsMu.RLock()
@@ -1156,16 +1156,16 @@ func (s *Store) Apply(l *raft.Log) interface{} {
 
 		if c.Typ == execute {
 			txChange := NewTxStateChange(conn)
-			r, err := conn.db.Execute(d.Queries, d.Atomic, d.Timings)
+			r, err := conn.db.Execute(*d.Queries, d.Atomic, d.Timings)
 			txChange.CheckAndSet()
 			return &fsmExecuteResponse{results: r, error: err}
 		}
-		r, err := conn.db.Query(d.Queries, d.Atomic, d.Timings)
+		r, err := conn.db.Query(*d.Queries, d.Atomic, d.Timings)
 		return &fsmQueryResponse{rows: r, error: err}
 	case metadataSet:
-		var d metadataSetSub
-		if err := json.Unmarshal(c.Sub, &d); err != nil {
-			return &fsmGenericResponse{error: err}
+		d, ok := c.Sub.(*metadataSetSub)
+		if !ok {
+			return &fsmGenericResponse{error: errors.New("type assertion metadataSetSub failed")}
 		}
 		func() {
 			s.metaMu.Lock()
@@ -1179,20 +1179,20 @@ func (s *Store) Apply(l *raft.Log) interface{} {
 		}()
 		return &fsmGenericResponse{}
 	case metadataDelete:
-		var d string
-		if err := json.Unmarshal(c.Sub, &d); err != nil {
-			return &fsmGenericResponse{error: err}
+		d, ok := c.Sub.(*string)
+		if !ok {
+			return &fsmGenericResponse{error: errors.New("type assertion string failed")}
 		}
 		func() {
 			s.metaMu.Lock()
 			defer s.metaMu.Unlock()
-			delete(s.meta, d)
+			delete(s.meta, *d)
 		}()
 		return &fsmGenericResponse{}
 	case connect:
-		var d connectionSub
-		if err := json.Unmarshal(c.Sub, &d); err != nil {
-			return &fsmGenericResponse{error: err}
+		d, ok := c.Sub.(*connectionSub)
+		if !ok {
+			return &fsmGenericResponse{error: errors.New("type assertion connectionSub failed")}
 		}
 
 		conn, err := s.db.Connect()
@@ -1204,9 +1204,9 @@ func (s *Store) Apply(l *raft.Log) interface{} {
 		s.connsMu.Unlock()
 		return d.ConnID
 	case disconnect:
-		var d connectionSub
-		if err := json.Unmarshal(c.Sub, &d); err != nil {
-			return &fsmGenericResponse{error: err}
+		d, ok := c.Sub.(*connectionSub)
+		if !ok {
+			return &fsmGenericResponse{error: errors.New("type assertion connectionSub failed")}
 		}
 
 		if d.ConnID == defaultConnID {
