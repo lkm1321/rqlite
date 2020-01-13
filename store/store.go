@@ -137,7 +137,7 @@ type QueryResponse struct {
 // ExecuteRequest represents a query that returns now rows, but does modify
 // the database.
 type ExecuteRequest struct {
-	Queries []string
+	Queries *[]string
 	Timings bool
 	Atomic  bool
 }
@@ -868,7 +868,7 @@ func (s *Store) execute(c *Connection, ex *ExecuteRequest) (*ExecuteResponse, er
 	d := &databaseSub{
 		ConnID:  c.ID,
 		Atomic:  ex.Atomic,
-		Queries: &ex.Queries,
+		Queries: ex.Queries,
 		Timings: ex.Timings,
 	}
 	cmd, err := newCommand(execute, d)

@@ -125,7 +125,7 @@ func (c *Connection) AbortTransaction() error {
 	if c.db == nil {
 		return ErrConnectionDoesNotExist
 	}
-	_, err := c.store.execute(c, &ExecuteRequest{[]string{"ROLLBACK"}, false, false})
+	_, err := c.store.execute(c, &ExecuteRequest{&[]string{"ROLLBACK"}, false, false})
 	return err
 }
 

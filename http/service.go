@@ -438,9 +438,11 @@ func (s *Service) handleLoad(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	queries := strings.SplitAfter(string(b), ";\n")
+
 	var resp Response
 	// Split by semiclon + newline, which marks each SQL query 
-	results, err := s.store.ExecuteOrAbort(&store.ExecuteRequest{strings.Split(string(b), ";\n"), true, false})
+	results, err := s.store.ExecuteOrAbort(&store.ExecuteRequest{&queries, true, false})
 	if err != nil {
 		if err == store.ErrNotLeader {
 			leader := s.leaderAPIAddr()
@@ -581,7 +583,7 @@ func (s *Service) handleExecute(connID uint64, w http.ResponseWriter, r *http.Re
 	}
 
 	var resp Response
-	results, err := execer.Execute(&store.ExecuteRequest{queries, timings, isAtomic})
+	results, err := execer.Execute(&store.ExecuteRequest{&queries, timings, isAtomic})
 	if err != nil {
 		if err == store.ErrNotLeader {
 			leader := s.leaderAPIAddr()
