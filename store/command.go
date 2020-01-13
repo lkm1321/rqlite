@@ -1,7 +1,7 @@
 package store
 
 import (
-	"encoding/json"
+	// "github.com/json-iterator/go"
 	"time"
 	"errors"
 	// "fmt"
@@ -46,7 +46,7 @@ func (m *rawMessage) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *command) MarshalJSON() ([]byte, error){
+func (c command) MarshalJSON() ([]byte, error){
 	switch c.Typ{
 		case execute, query: 
 			return json.Marshal(&struct{

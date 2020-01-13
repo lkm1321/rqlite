@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
+	"github.com/json-iterator/go"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // HTTPTester represents a HTTP transport tester.
 type HTTPTester struct {

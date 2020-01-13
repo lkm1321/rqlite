@@ -6,7 +6,7 @@ package store
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
+	"github.com/json-iterator/go"
 	"errors"
 	"expvar"
 	"fmt"
@@ -19,6 +19,7 @@ import (
 	"sort"
 	"sync"
 	"time"
+	"runtime"
 
 	"github.com/hashicorp/raft"
 	"github.com/hashicorp/raft-boltdb"
@@ -26,6 +27,9 @@ import (
 )
 
 var (
+	// the json-iter library 
+	json = jsoniter.ConfigCompatibleWithStandardLibrary
+		
 	// ErrNotLeader is returned when a node attempts to execute a leader-only
 	// operation.
 	ErrNotLeader = errors.New("not leader")
@@ -887,6 +891,8 @@ func (s *Store) execute(c *Connection, ex *ExecuteRequest) (*ExecuteResponse, er
 		}
 		return nil, e.Error()
 	}
+
+	runtime.GC()
 
 	switch r := f.Response().(type) {
 	case *fsmExecuteResponse:

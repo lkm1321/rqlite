@@ -3,7 +3,7 @@ package cluster
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/json"
+	"github.com/json-iterator/go"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,6 +14,7 @@ import (
 
 	httpd "github.com/lkm1321/rqlite/http"
 )
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const numAttempts int = 3
 const attemptInterval time.Duration = 5 * time.Second

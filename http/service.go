@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
+	"github.com/json-iterator/go"
 	"errors"
 	"expvar"
 	"fmt"
@@ -27,6 +27,9 @@ import (
 const defaultConnID = 0
 
 var (
+	// the json-iter library 
+	json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	// ErrInvalidRequest is returned when an invalid request is received
 	ErrInvalidRequest = errors.New("invalid request received")
 

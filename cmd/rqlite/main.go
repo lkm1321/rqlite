@@ -4,7 +4,7 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
+	"github.com/json-iterator/go"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +13,9 @@ import (
 	"github.com/Bowery/prompt"
 	"github.com/mkideal/cli"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 
 const maxRedirect = 21
 

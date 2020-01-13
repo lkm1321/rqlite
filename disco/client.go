@@ -3,7 +3,7 @@ package disco
 
 import (
 	"bytes"
-	"encoding/json"
+	"github.com/json-iterator/go"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"os"
 )
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 
 // Response represents the response returned by a Discovery Service.
 type Response struct {

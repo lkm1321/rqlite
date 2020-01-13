@@ -1,7 +1,7 @@
 package db
 
 import (
-	"encoding/json"
+	"github.com/json-iterator/go"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +10,8 @@ import (
 
 	"github.com/lkm1321/rqlite/testdata/chinook"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 /*
  * Lowest-layer database tests
