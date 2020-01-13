@@ -1031,7 +1031,7 @@ func (s *Store) remove(id string) error {
 		return f.Error()
 	}
 
-	c, err := newCommand(metadataDelete, id)
+	c, err := newCommand(metadataDelete, &id)
 	if err != nil {
 		return err
 	}

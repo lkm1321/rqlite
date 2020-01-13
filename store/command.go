@@ -45,6 +45,47 @@ func (m *rawMessage) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (c *command) MarshalJSON(b []byte) ([]byte, error){
+	switch c.Typ{
+		case execute, query: 
+			return json.Marshal(&struct{
+				Typ commandType     `json:"typ"`
+				Sub *databaseSub 	`json:"sub,omitempty"`							
+			}{
+				Typ: c.Typ, 
+				Sub: c.Sub.(*databaseSub),
+			})
+		case metadataSet:
+			return json.Marshal(&struct{
+				Typ commandType     `json:"typ"`
+				Sub *metadataSetSub `json:"sub,omitempty"`							
+			}{
+				Typ: c.Typ, 
+				Sub: c.Sub.(*metadataSetSub),
+			})		
+		case metadataDelete:
+			return json.Marshal(&struct{
+				Typ commandType     `json:"typ"`
+				Sub *string 		`json:"sub,omitempty"`							
+			}{
+				Typ: c.Typ, 
+				Sub: c.Sub.(*string),
+			})
+
+		case connect, disconnect:
+			return json.Marshal(&struct{
+				Typ commandType     `json:"typ"`
+				Sub *connectionSub 		`json:"sub,omitempty"`							
+			}{
+				Typ: c.Typ, 
+				Sub: c.Sub.(*connectionSub),
+			})
+
+		default:
+			return nil, errors.New("UnmarshalJSON: unknown type")
+	}
+}
+
 func (c *command) UnmarshalJSON(b []byte) error {
 
 	// first, unmarshall into a map from string to json.RawMessage
